@@ -109,9 +109,6 @@ type Viper struct {
 	// A set of paths to look for the config file in
 	configPaths []string
 
-	// A set of remote providers to search for the configuration
-	remoteProviders []*remoteProvider
-
 	// Name of file to look for inside the path
 	configName string
 	configFile string
