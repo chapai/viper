@@ -222,62 +222,6 @@ func (v *Viper) AddConfigPath(in string) {
 	}
 }
 
-// AddRemoteProvider adds a remote configuration source.
-// Remote Providers are searched in the order they are added.
-// provider is a string value, "etcd" or "consul" are currently supported.
-// endpoint is the url.  etcd requires http://ip:port  consul requires ip:port
-// path is the path in the k/v store to retrieve configuration
-// To retrieve a config file called myapp.json from /configs/myapp.json
-// you should set path to /configs and set config name (SetConfigName()) to
-// "myapp"
-func AddRemoteProvider(provider, endpoint, path string) error {
-	return v.AddRemoteProvider(provider, endpoint, path)
-}
-func (v *Viper) AddRemoteProvider(provider, endpoint, path string) error {
-	if !stringInSlice(provider, SupportedRemoteProviders) {
-		return UnsupportedRemoteProviderError(provider)
-	}
-	if provider != "" && endpoint != "" {
-		jww.INFO.Printf("adding %s:%s to remote provider list", provider, endpoint)
-		rp := &remoteProvider{
-			endpoint: endpoint,
-			provider: provider,
-			path:     path,
-		}
-		if !v.providerPathExists(rp) {
-			v.remoteProviders = append(v.remoteProviders, rp)
-		}
-	}
-	return nil
-}
-
-func (v *Viper) AddSecureRemoteProvider(provider, endpoint, path, secretkeyring string) error {
-	if !stringInSlice(provider, SupportedRemoteProviders) {
-		return UnsupportedRemoteProviderError(provider)
-	}
-	if provider != "" && endpoint != "" {
-		jww.INFO.Printf("adding %s:%s to remote provider list", provider, endpoint)
-		rp := &remoteProvider{
-			endpoint: endpoint,
-			provider: provider,
-			path:     path,
-		}
-		if !v.providerPathExists(rp) {
-			v.remoteProviders = append(v.remoteProviders, rp)
-		}
-	}
-	return nil
-}
-
-func (v *Viper) providerPathExists(p *remoteProvider) bool {
-	for _, y := range v.remoteProviders {
-		if reflect.DeepEqual(y, p) {
-			return true
-		}
-	}
-	return false
-}
-
 // Viper is essentially repository for configurations
 // Get can retrieve any value given the key to use
 // Get has the behavior of returning the value associated with the first
@@ -678,20 +622,6 @@ func (v *Viper) insensitiviseMaps() {
 	insensitiviseMap(v.override)
 	insensitiviseMap(v.kvstore)
 }
-
-// retrieve the first found remote configuration
-func (v *Viper) getKeyValueConfig() error {
-	for _, rp := range v.remoteProviders {
-		val, err := v.getRemoteConfig(rp)
-		if err != nil {
-			continue
-		}
-		v.kvstore = val
-		return nil
-	}
-	return RemoteConfigError("No Files Found")
-}
-
 
 // Return all keys regardless where they are set
 func AllKeys() []string { return v.AllKeys() }
