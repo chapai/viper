@@ -35,7 +35,6 @@ import (
 	"github.com/spf13/cast"
 	jww "github.com/spf13/jwalterweatherman"
 	"github.com/spf13/pflag"
-	crypt "github.com/xordataexchange/crypt/config"
 )
 
 var v *Viper
@@ -162,17 +161,6 @@ func Reset() {
 	SupportedRemoteProviders = []string{"etcd", "consul"}
 }
 
-// remoteProvider stores the configuration necessary
-// to connect to a remote key/value store.
-// Optional secretKeyring to unencrypt encrypted values
-// can be provided.
-type remoteProvider struct {
-	provider      string
-	endpoint      string
-	path          string
-	secretKeyring string
-}
-
 // Universally supported extensions.
 var SupportedExts []string = []string{"json", "toml", "yaml", "yml", "properties", "props", "prop"}
 
@@ -264,20 +252,6 @@ func (v *Viper) AddRemoteProvider(provider, endpoint, path string) error {
 		}
 	}
 	return nil
-}
-
-// AddSecureRemoteProvider adds a remote configuration source.
-// Secure Remote Providers are searched in the order they are added.
-// provider is a string value, "etcd" or "consul" are currently supported.
-// endpoint is the url.  etcd requires http://ip:port  consul requires ip:port
-// secretkeyring is the filepath to your openpgp secret keyring.  e.g. /etc/secrets/myring.gpg
-// path is the path in the k/v store to retrieve configuration
-// To retrieve a config file called myapp.json from /configs/myapp.json
-// you should set path to /configs and set config name (SetConfigName()) to
-// "myapp"
-// Secure Remote Providers are implemented with github.com/xordataexchange/crypt
-func AddSecureRemoteProvider(provider, endpoint, path, secretkeyring string) error {
-	return v.AddSecureRemoteProvider(provider, endpoint, path, secretkeyring)
 }
 
 func (v *Viper) AddSecureRemoteProvider(provider, endpoint, path, secretkeyring string) error {
@@ -721,39 +695,6 @@ func (v *Viper) getKeyValueConfig() error {
 	return RemoteConfigError("No Files Found")
 }
 
-func (v *Viper) getRemoteConfig(provider *remoteProvider) (map[string]interface{}, error) {
-	var cm crypt.ConfigManager
-	var err error
-
-	if provider.secretKeyring != "" {
-		kr, err := os.Open(provider.secretKeyring)
-		defer kr.Close()
-		if err != nil {
-			return nil, err
-		}
-		if provider.provider == "etcd" {
-			cm, err = crypt.NewEtcdConfigManager([]string{provider.endpoint}, kr)
-		} else {
-			cm, err = crypt.NewConsulConfigManager([]string{provider.endpoint}, kr)
-		}
-	} else {
-		if provider.provider == "etcd" {
-			cm, err = crypt.NewStandardEtcdConfigManager([]string{provider.endpoint})
-		} else {
-			cm, err = crypt.NewStandardConsulConfigManager([]string{provider.endpoint})
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	b, err := cm.Get(provider.path)
-	if err != nil {
-		return nil, err
-	}
-	reader := bytes.NewReader(b)
-	v.marshalReader(reader, v.kvstore)
-	return v.kvstore, err
-}
 
 // Return all keys regardless where they are set
 func AllKeys() []string { return v.AllKeys() }
