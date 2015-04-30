@@ -598,17 +598,6 @@ func (v *Viper) ReadInConfig() error {
 	return nil
 }
 
-// Attempts to get configuration from a remote source
-// and read it in the remote configuration registry.
-func ReadRemoteConfig() error { return v.ReadRemoteConfig() }
-func (v *Viper) ReadRemoteConfig() error {
-	err := v.getKeyValueConfig()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // Marshall a Reader into a map
 // Should probably be an unexported function
 func marshalReader(in io.Reader, c map[string]interface{}) { v.marshalReader(in, c) }
