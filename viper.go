@@ -28,8 +28,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/kr/pretty"
+	
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/cast"
 	jww "github.com/spf13/jwalterweatherman"
@@ -738,17 +737,17 @@ func (v *Viper) findConfigFile() (string, error) {
 func Debug() { v.Debug() }
 func (v *Viper) Debug() {
 	fmt.Println("Config:")
-	pretty.Println(v.config)
+	fmt.Println(v.config)
 	fmt.Println("Key/Value Store:")
-	pretty.Println(v.kvstore)
+	fmt.Println(v.kvstore)
 	fmt.Println("Env:")
-	pretty.Println(v.env)
+	fmt.Println(v.env)
 	fmt.Println("Defaults:")
-	pretty.Println(v.defaults)
+	fmt.Println(v.defaults)
 	fmt.Println("Override:")
-	pretty.Println(v.override)
+	fmt.Println(v.override)
 	fmt.Println("Aliases:")
-	pretty.Println(v.aliases)
+	fmt.Println(v.aliases)
 	fmt.Println("PFlags")
-	pretty.Println(v.pflags)
+	fmt.Println(v.pflags)
 }
